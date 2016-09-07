@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Manager_Video_Converter
@@ -15,6 +11,78 @@ namespace Manager_Video_Converter
         public Form1()
         {
             InitializeComponent();
+            DisplayOpenFiles();
+            comboBox2.Items.Add("avi");
+            comboBox2.Items.Add("flv");
+            comboBox2.Items.Add("mkv");
+            comboBox2.Items.Add("mov");
+            comboBox2.Items.Add("mp4");
+            comboBox2.Items.Add("mpg");
+            comboBox2.Items.Add("wmv");
+        }
+
+        void SaveOpenFile(string FileName)
+        {
+            string path = "OpenFiles.txt";
+            if (!File.Exists(path))
+            {
+                using (StreamWriter sw = File.CreateText(path))
+                {
+                    sw.WriteLine(FileName);
+                }
+            }
+            using (StreamWriter sw = File.AppendText(path))
+            {
+                sw.WriteLine(FileName);
+            }
+        }
+
+        void DisplayOpenFiles()
+        {
+            string path = "OpenFiles.txt";
+            using (StreamReader sr = File.OpenText(path))
+            {
+                string s = "";
+                comboBox1.Items.Clear();
+                while ((s = sr.ReadLine()) != null)
+                {
+                    comboBox1.Items.Add(s);
+                }
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            DialogResult result = openFileDialog1.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                comboBox1.Text = openFileDialog1.FileName;
+                SaveOpenFile(openFileDialog1.FileName);
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Process p = new Process();
+
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.FileName = "ffmpeg";
+            p.StartInfo.Arguments = " -i " + comboBox1.Text + " " + textBox1.Text + "." + comboBox2.Text;
+            p.StartInfo.CreateNoWindow = true;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.RedirectStandardError = true;
+
+            p.Start();
+
+            p.WaitForExit();
+            if (p.HasExited)
+            {
+                p.CancelErrorRead();
+                p.CancelOutputRead();
+                p.Close();
+                MessageBox.Show("Конвертирование завершено!");
+            }
         }
     }
 }
+

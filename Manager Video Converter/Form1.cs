@@ -40,6 +40,11 @@ namespace Manager_Video_Converter
         void DisplayOpenFiles()
         {
             string path = "OpenFiles.txt";
+            if (!File.Exists(path))
+            {
+                using (StreamWriter sw = File.CreateText(path))
+                { }
+            }
             using (StreamReader sr = File.OpenText(path))
             {
                 string s = "";
@@ -73,16 +78,16 @@ namespace Manager_Video_Converter
             p.StartInfo.RedirectStandardError = true;
 
             p.Start();
+            textBox2.Text = Environment.CurrentDirectory + "\\" + textBox1.Text + "." + comboBox2.Text;
+        }
 
-            p.WaitForExit();
-            if (p.HasExited)
-            {
-                p.CancelErrorRead();
-                p.CancelOutputRead();
-                p.Close();
-                MessageBox.Show("Конвертирование завершено!");
-            }
+        private void button3_Click(object sender, EventArgs e)
+        {
+
+            Process.Start("explorer.exe", @"/select, " + textBox2.Text);
+
         }
     }
 }
+
 
